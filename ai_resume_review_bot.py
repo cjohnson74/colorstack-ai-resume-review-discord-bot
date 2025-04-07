@@ -364,25 +364,28 @@ class ResumeBot(commands.Bot):
                         formatting_embed = discord.Embed(title="**Formatting Feedback**\n", color=0xe5e7eb)
                         await message.channel.send(embed=formatting_embed)
 
-                        aspects = formatting.get('aspects', [])
-                        if not isinstance(aspects, list):
-                            logging.error("Expected 'aspects' to be a list.")
-                            return
-
-                        for aspect in aspects:
-                            if isinstance(aspect, dict):
-                                total_formatting_score += aspect.get('score', 0)
-                                aspect_embed = discord.Embed(title=f"{aspect.get('score', 0)}/10.0", color=get_score_color(aspect.get('score', 0)))
-                                aspect_embed.add_field(name=f"{aspect.get('name', 'Unknown')}", value=f"> {aspect.get('feedback', 'No feedback')}\n", inline=False)
-                                if aspect.get('suggestions'):
-                                    aspect_embed.add_field(name="Suggestions", value=f"> {aspect.get('suggestions')}", inline=False)
+                        # Process each formatting aspect
+                        total_formatting_score = 0
+                        aspect_count = 0
+                        for aspect_name, aspect_data in formatting.items():
+                            if aspect_name == "overall_score":
+                                continue
+                                
+                            if isinstance(aspect_data, dict):
+                                aspect_count += 1
+                                score = aspect_data.get('score', 0)
+                                total_formatting_score += score
+                                aspect_embed = discord.Embed(title=f"{score}/10.0", color=get_score_color(score))
+                                aspect_embed.add_field(name=f"{aspect_name.replace('_', ' ').title()}", value=f"> {aspect_data.get('feedback', 'No feedback')}\n", inline=False)
+                                if aspect_data.get('suggestions'):
+                                    aspect_embed.add_field(name="Suggestions", value=f"> {aspect_data.get('suggestions')}", inline=False)
                                 await message.channel.send(embed=aspect_embed)
                             else:
-                                logging.error("Aspect item is not a dictionary.")
+                                logging.error(f"Aspect {aspect_name} is not a dictionary.")
 
-                        if len(aspects) > 0:
-                            total_formatting_score = total_formatting_score / len(aspects)
-                            overall_score = formatting['overall_score']
+                        if aspect_count > 0:
+                            total_formatting_score = total_formatting_score / aspect_count
+                            overall_score = formatting.get('overall_score', total_formatting_score)
                             overall_score_embed = discord.Embed(title="Formatting Score", color=get_score_color(overall_score))
                             overall_score_embed.add_field(name=f"{round(overall_score,1)}/10.0", value="", inline=False)
                             await message.channel.send(embed=overall_score_embed)
