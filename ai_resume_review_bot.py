@@ -364,31 +364,91 @@ class ResumeBot(commands.Bot):
                         formatting_embed = discord.Embed(title="**Formatting Feedback**\n", color=0xe5e7eb)
                         await message.channel.send(embed=formatting_embed)
 
-                        # Process each formatting aspect
-                        total_formatting_score = 0
-                        aspect_count = 0
-                        for aspect_name, aspect_data in formatting.items():
-                            if aspect_name == "overall_score":
-                                continue
-                                
-                            if isinstance(aspect_data, dict):
-                                aspect_count += 1
-                                score = aspect_data.get('score', 0)
-                                total_formatting_score += score
-                                aspect_embed = discord.Embed(title=f"{score}/10.0", color=get_score_color(score))
-                                aspect_embed.add_field(name=f"{aspect_name.replace('_', ' ').title()}", value=f"> {aspect_data.get('feedback', 'No feedback')}\n", inline=False)
-                                if aspect_data.get('suggestions'):
-                                    aspect_embed.add_field(name="Suggestions", value=f"> {aspect_data.get('suggestions')}", inline=False)
-                                await message.channel.send(embed=aspect_embed)
-                            else:
-                                logging.error(f"Aspect {aspect_name} is not a dictionary.")
+                        # Group formatting aspects
+                        font_aspects = ['font_consistency', 'font_choice', 'font_size']
+                        layout_aspects = ['alignment', 'margins', 'overall_layout', 'page_utilization', 'is_single_page']
+                        spacing_aspects = ['line_spacing', 'section_spacing', 'bullet_points']
+                        other_aspects = ['headings', 'contact_information', 'consistency']
 
-                        if aspect_count > 0:
-                            total_formatting_score = total_formatting_score / aspect_count
-                            overall_score = formatting.get('overall_score', total_formatting_score)
-                            overall_score_embed = discord.Embed(title="Formatting Score", color=get_score_color(overall_score))
-                            overall_score_embed.add_field(name=f"{round(overall_score,1)}/10.0", value="", inline=False)
-                            await message.channel.send(embed=overall_score_embed)
+                        # Process font aspects
+                        font_score = 0
+                        font_feedback = []
+                        for aspect in font_aspects:
+                            if aspect in formatting:
+                                data = formatting[aspect]
+                                font_score += data.get('score', 0)
+                                if data.get('feedback'):
+                                    font_feedback.append(f"• {data['feedback']}")
+                        
+                        if font_feedback:
+                            font_embed = discord.Embed(
+                                title=f"Font & Typography: {round(font_score/len(font_aspects), 1)}/10.0",
+                                color=get_score_color(font_score/len(font_aspects))
+                            )
+                            font_embed.add_field(name="Feedback", value="\n".join(font_feedback), inline=False)
+                            await message.channel.send(embed=font_embed)
+
+                        # Process layout aspects
+                        layout_score = 0
+                        layout_feedback = []
+                        for aspect in layout_aspects:
+                            if aspect in formatting:
+                                data = formatting[aspect]
+                                layout_score += data.get('score', 0)
+                                if data.get('feedback'):
+                                    layout_feedback.append(f"• {data['feedback']}")
+                        
+                        if layout_feedback:
+                            layout_embed = discord.Embed(
+                                title=f"Layout & Structure: {round(layout_score/len(layout_aspects), 1)}/10.0",
+                                color=get_score_color(layout_score/len(layout_aspects))
+                            )
+                            layout_embed.add_field(name="Feedback", value="\n".join(layout_feedback), inline=False)
+                            await message.channel.send(embed=layout_embed)
+
+                        # Process spacing aspects
+                        spacing_score = 0
+                        spacing_feedback = []
+                        for aspect in spacing_aspects:
+                            if aspect in formatting:
+                                data = formatting[aspect]
+                                spacing_score += data.get('score', 0)
+                                if data.get('feedback'):
+                                    spacing_feedback.append(f"• {data['feedback']}")
+                        
+                        if spacing_feedback:
+                            spacing_embed = discord.Embed(
+                                title=f"Spacing & Organization: {round(spacing_score/len(spacing_aspects), 1)}/10.0",
+                                color=get_score_color(spacing_score/len(spacing_aspects))
+                            )
+                            spacing_embed.add_field(name="Feedback", value="\n".join(spacing_feedback), inline=False)
+                            await message.channel.send(embed=spacing_embed)
+
+                        # Process other aspects
+                        other_score = 0
+                        other_feedback = []
+                        for aspect in other_aspects:
+                            if aspect in formatting:
+                                data = formatting[aspect]
+                                other_score += data.get('score', 0)
+                                if data.get('feedback'):
+                                    other_feedback.append(f"• {data['feedback']}")
+                        
+                        if other_feedback:
+                            other_embed = discord.Embed(
+                                title=f"Other Formatting: {round(other_score/len(other_aspects), 1)}/10.0",
+                                color=get_score_color(other_score/len(other_aspects))
+                            )
+                            other_embed.add_field(name="Feedback", value="\n".join(other_feedback), inline=False)
+                            await message.channel.send(embed=other_embed)
+
+                        # Show overall formatting score
+                        overall_score = formatting.get('overall_score', 0)
+                        overall_embed = discord.Embed(
+                            title=f"Overall Formatting Score: {round(overall_score, 1)}/10.0",
+                            color=get_score_color(overall_score)
+                        )
+                        await message.channel.send(embed=overall_embed)
 
                         final_score = (avg_projects_final_score + avg_expereinces_final_score + total_formatting_score) / 3.0  # Ensure float division
                         gif_url = get_gif(final_score)
