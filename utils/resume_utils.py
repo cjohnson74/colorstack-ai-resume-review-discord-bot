@@ -248,6 +248,9 @@ def review_resume(resume_user: bytes, resume_jake: bytes, job_title: str = None,
     {json.dumps(extracted_data_user_resume, indent=2)}
     Additional feedback: {additional_feedback}
     Now, compare the formatting of this resume with the default resume data provided in the system prompt.
+    
+    IMPORTANT: Keep all feedback strings concise and under 200 characters each. Be direct and specific.
+    
     Only return JSON that respects the following schema:
     experiences: [
         {{
@@ -318,6 +321,16 @@ def review_resume(resume_user: bytes, resume_jake: bytes, job_title: str = None,
     try:
         completion = get_chat_completion(max_tokens=8192, messages=messages, system=system_prompt, temperature=0.25)
         logger.info(f"Result structure: {completion}")
+        
+        # Strip markdown code blocks if present
+        completion = completion.strip()
+        if completion.startswith("```json"):
+            completion = completion[7:]  # Remove ```json
+        elif completion.startswith("```"):
+            completion = completion[3:]  # Remove ```
+        if completion.endswith("```"):
+            completion = completion[:-3]  # Remove trailing ```
+        completion = completion.strip()
         
         # The completion should be a JSON string directly from the API
         try:

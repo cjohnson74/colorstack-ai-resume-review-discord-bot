@@ -1,26 +1,29 @@
 {
   "resume_reviews": {
-    "total": 10,
+    "total": 11,
     "by_server": {
-      "987654321": 10
+      "987654321": 10,
+      "1088161921666142290": 1
     },
     "by_user": {
-      "123456789": 10
+      "123456789": 10,
+      "1061438766419558442": 1
     },
     "by_date": {
-      "2025-03-14": 10
+      "2025-03-14": 10,
+      "2025-11-03": 1
     },
     "average_scores": {
-      "overall": 7.5,
-      "experiences": 8.0,
-      "projects": 7.0,
-      "formatting": 7.5
+      "overall": 7.34,
+      "experiences": 7.77,
+      "projects": 6.79,
+      "formatting": 6.82
     }
   },
   "api_usage": {
-    "total_tokens": 2000,
-    "total_requests": 2,
-    "estimated_cost": 0.018
+    "total_tokens": 208446,
+    "total_requests": 7,
+    "estimated_cost": 1.032258
   },
   "feedback_ratings": {
     "total": 10,

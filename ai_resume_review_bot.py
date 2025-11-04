@@ -39,6 +39,34 @@ def get_gif(score):
     else:
         return random.choice(GIFS["bad_score_gifs"])
 
+def split_feedback(feedback_list, max_length=1000):
+    """Split feedback into chunks to fit within Discord's 1024 character limit per field."""
+    combined = "\n".join(feedback_list)
+    if len(combined) <= max_length:
+        return [combined]
+    
+    # Split into multiple chunks
+    chunks = []
+    current_chunk = []
+    current_length = 0
+    
+    for item in feedback_list:
+        item_length = len(item) + 1  # +1 for newline
+        if current_length + item_length > max_length and current_chunk:
+            # Save current chunk and start new one
+            chunks.append("\n".join(current_chunk))
+            current_chunk = [item]
+            current_length = item_length
+        else:
+            current_chunk.append(item)
+            current_length += item_length
+    
+    # Add remaining items
+    if current_chunk:
+        chunks.append("\n".join(current_chunk))
+    
+    return chunks
+
 class ResumeBot(commands.Bot):
     def __init__(self, command_prefix, intents):
         super().__init__(command_prefix=command_prefix, intents=intents)
@@ -385,7 +413,10 @@ class ResumeBot(commands.Bot):
                                 title=f"Font & Typography: {round(font_score/len(font_aspects), 1)}/10.0",
                                 color=get_score_color(font_score/len(font_aspects))
                             )
-                            font_embed.add_field(name="Feedback", value="\n".join(font_feedback), inline=False)
+                            feedback_chunks = split_feedback(font_feedback)
+                            for i, chunk in enumerate(feedback_chunks):
+                                field_name = "Feedback" if i == 0 else "Feedback (cont.)"
+                                font_embed.add_field(name=field_name, value=chunk, inline=False)
                             await message.channel.send(embed=font_embed)
 
                         # Process layout aspects
@@ -403,7 +434,10 @@ class ResumeBot(commands.Bot):
                                 title=f"Layout & Structure: {round(layout_score/len(layout_aspects), 1)}/10.0",
                                 color=get_score_color(layout_score/len(layout_aspects))
                             )
-                            layout_embed.add_field(name="Feedback", value="\n".join(layout_feedback), inline=False)
+                            feedback_chunks = split_feedback(layout_feedback)
+                            for i, chunk in enumerate(feedback_chunks):
+                                field_name = "Feedback" if i == 0 else "Feedback (cont.)"
+                                layout_embed.add_field(name=field_name, value=chunk, inline=False)
                             await message.channel.send(embed=layout_embed)
 
                         # Process spacing aspects
@@ -421,7 +455,10 @@ class ResumeBot(commands.Bot):
                                 title=f"Spacing & Organization: {round(spacing_score/len(spacing_aspects), 1)}/10.0",
                                 color=get_score_color(spacing_score/len(spacing_aspects))
                             )
-                            spacing_embed.add_field(name="Feedback", value="\n".join(spacing_feedback), inline=False)
+                            feedback_chunks = split_feedback(spacing_feedback)
+                            for i, chunk in enumerate(feedback_chunks):
+                                field_name = "Feedback" if i == 0 else "Feedback (cont.)"
+                                spacing_embed.add_field(name=field_name, value=chunk, inline=False)
                             await message.channel.send(embed=spacing_embed)
 
                         # Process other aspects
@@ -439,7 +476,10 @@ class ResumeBot(commands.Bot):
                                 title=f"Other Formatting: {round(other_score/len(other_aspects), 1)}/10.0",
                                 color=get_score_color(other_score/len(other_aspects))
                             )
-                            other_embed.add_field(name="Feedback", value="\n".join(other_feedback), inline=False)
+                            feedback_chunks = split_feedback(other_feedback)
+                            for i, chunk in enumerate(feedback_chunks):
+                                field_name = "Feedback" if i == 0 else "Feedback (cont.)"
+                                other_embed.add_field(name=field_name, value=chunk, inline=False)
                             await message.channel.send(embed=other_embed)
 
                         # Show overall formatting score
